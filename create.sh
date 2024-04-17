@@ -1,12 +1,63 @@
 #!/bin/bash
 
-# Default path for SSL certificates
 cert_dir="/etc/ssl/certs/apache2"
 
-# Function to create a self-signed certificate
+# Function to check if a website exists
+check_website_exists() {
+    domain="$1"
+    if [ -f "/etc/apache2/sites-available/$domain.conf" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to check if a user exists
+check_user_exists() {
+    username="$1"
+    if id "$username" &>/dev/null; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+# Function to create a new user
+create_user() {
+    username="$1"
+
+    # Create a new user
+    useradd -m -s /bin/bash "$username"
+    
+    # Ask for password and confirm password
+    while true; do
+        read -s -p "Enter password for user $username: " password
+        echo ""
+        read -s -p "Confirm password for user $username: " confirm_password
+        echo ""
+        if [ "$password" = "$confirm_password" ]; then
+            echo "$username:$password" | chpasswd
+            echo "User $username created successfully."
+            break
+        else
+            echo "Passwords do not match. Please try again."
+        fi
+    done
+}
+
+# Function to find the next available port starting from 8080
+find_next_available_port() {
+    port=8080
+    while ss -tln | grep -q ":$port"; do
+        ((port++))
+    done
+    echo "$port"
+}
+
+# Function to create a wildcard SSL certificate
 create_certificate() {
     domain="$1"
-    
+
     # Check if the SSL certificate directory exists, if not, create it
     if [ ! -d "$cert_dir" ]; then
         mkdir -p "$cert_dir"
@@ -14,46 +65,20 @@ create_certificate() {
 
     # Check if the SSL certificate and key already exist
     if [ ! -f "$cert_dir/$domain.crt" ] || [ ! -f "$cert_dir/$domain.key" ]; then
-        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "$cert_dir/$domain.key" -out "$cert_dir/$domain.crt" -subj "/CN=$domain"
+        # Wildcard certificate for all subdomains
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "$cert_dir/$domain.key" -out "$cert_dir/$domain.crt" -subj "/CN=*.$domain"
     else
-        echo "Certificate and key already exist for $domain. Skipping certificate creation."
+        # Certificate and key already exist, delete them and create new ones
+        echo "Certificate and key already exist for $domain. Overwriting..."
+        rm -f "$cert_dir/$domain.crt" "$cert_dir/$domain.key"
+        create_certificate "$domain"  # Call the function recursively to create new certificate and key
     fi
 }
 
-# Function to create a new site
-create_site() {
-    # Parse arguments
+create_website() {
     domain="$1"
     username="$2"
-
-    # Check if user exists
-    if id "$username" &>/dev/null; then
-        read -p "User $username already exists. Do you want to proceed with this user? [y/N]: " choice
-        case "$choice" in
-            [Yy]*)
-                ;;
-            *)
-                read -p "Enter a different username: " username
-                ;;
-        esac
-    fi
-
-    # Check if the domain already exists
-    if [ -f "/etc/apache2/sites-available/$domain.conf" ]; then
-        echo "A site with the domain $domain already exists. Aborting."
-        exit 1
-    fi
-
-    # Create new user if not exists
-    if ! id "$username" &>/dev/null; then
-        useradd -m -s /bin/bash "$username"
-    fi
-
-    # Create site directory
-    mkdir -p "/var/www/$username/$domain/public_html"
-    chown -R "$username:$username" "/var/www/$username/$domain"
-
-    # Create virtual host configuration
+    fb_port="$3"
     cat << EOF > "/etc/apache2/sites-available/$domain.conf"
 <VirtualHost *:80>
     ServerAdmin admin@$domain
@@ -92,39 +117,102 @@ create_site() {
 
     CustomLog ${APACHE_LOG_DIR}/${domain}_access.log combined
 </VirtualHost>
+
+<VirtualHost *:443>
+    ServerAdmin admin@files.$domain
+    ServerName files.$domain
+    ServerAlias www.files.$domain
+    ProxyPreserveHost On
+    ProxyPass / http://localhost:$fb_port/
+    ProxyPassReverse / http://localhost:$fb_port/
+</VirtualHost>
 EOF
 
-    # Check if the rewrite module is enabled, if not, enable it
-    if ! a2query -m rewrite &>/dev/null; then
-        a2enmod rewrite
-    fi
-
-    # Enable SSL module if not already enabled
-    if ! a2query -m ssl &>/dev/null; then
-        a2enmod ssl
-    fi
-
-    # Enable virtual host
+    a2enmod proxy
+    a2enmod proxy_http
+    a2enmod ssl
+    a2enmod rewrite
     a2ensite "$domain.conf"
-
-    # Reload Apache
-    systemctl reload apache2
-
-    echo "Site $domain created successfully!"
+    systemctl restart apache2
+    echo "Website $domain created successfully!"
 }
 
-# Ask user for domain and username
+# Function to create Filebrowser service
+create_filebrowser_service() {
+    domain="$1"
+    fb_service_file="/etc/systemd/system/filebrowser-$domain.service"
+    fb_database_file="/etc/filebrowser/database/$domain.db"
+    fb_config_file="/etc/filebrowser/config/$domain.json"
+
+    # Create directories if not exist
+    mkdir -p "/etc/filebrowser/database"
+    mkdir -p "/etc/filebrowser/config"
+
+    # Find the next available port
+    fb_port=$(find_next_available_port)
+
+    # Create Filebrowser service file
+    cat << EOF > "$fb_service_file"
+[Unit]
+Description=File browser: $domain
+After=network.target
+
+[Service]
+User=golokdev
+Group=golokdev
+ExecStart=/usr/local/bin/filebrowser -c $fb_config_file
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    # Create Filebrowser configuration file
+    cat << EOF > "$fb_config_file"
+{
+  "port": $fb_port,
+  "baseURL": "",
+  "address": "",
+  "log": "stdout",
+  "database": "$fb_database_file",
+  "root": "/var/www/$username/$domain/public_html"
+}
+EOF
+
+    # Reload daemon and start Filebrowser service
+    systemctl daemon-reload
+    systemctl enable "filebrowser-$domain"
+    systemctl start "filebrowser-$domain"
+}
+
+# Ask user for domain name and username
 read -p "Enter domain name: " domain
 read -p "Enter username: " username
 
-# Check if the domain already exists
-if [ -f "/etc/apache2/sites-available/$domain.conf" ]; then
+# Check if the website already exists
+if check_website_exists "$domain"; then
     echo "A site with the domain $domain already exists. Aborting."
     exit 1
 fi
 
-# Create the site using the provided domain and username
-create_site "$domain" "$username"
+# Check if the username already exists
+if check_user_exists "$username"; then
+    read -p "Do you want to proceed with user $username? [Y/n]: " choice
+    case "$choice" in
+        [Yy]*)
+            ;;
+        *)
+            read -p "Enter a different username: " username
+            ;;
+    esac
+else
+    create_user "$username"
+fi
 
-# Create certificate for the domain
+# Create Filebrowser service for the subdomain files.domain
+create_filebrowser_service "$domain"
+
+# Create website in the virtual host
+create_website "$domain" "$username" "$fb_port"
+
+# Create wildcard SSL certificate
 create_certificate "$domain"
