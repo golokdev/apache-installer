@@ -6,7 +6,18 @@ cert_dir="/etc/ssl/certs/apache2"
 # Function to create a self-signed certificate
 create_certificate() {
     domain="$1"
-    openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "$cert_dir/$domain.key" -out "$cert_dir/$domain.crt" -subj "/CN=$domain"
+    
+    # Check if the SSL certificate directory exists, if not, create it
+    if [ ! -d "$cert_dir" ]; then
+        mkdir -p "$cert_dir"
+    fi
+
+    # Check if the SSL certificate and key already exist
+    if [ ! -f "$cert_dir/$domain.crt" ] || [ ! -f "$cert_dir/$domain.key" ]; then
+        openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout "$cert_dir/$domain.key" -out "$cert_dir/$domain.crt" -subj "/CN=$domain"
+    else
+        echo "Certificate and key already exist for $domain. Skipping certificate creation."
+    fi
 }
 
 # Function to create a new site
@@ -82,6 +93,16 @@ create_site() {
     CustomLog ${APACHE_LOG_DIR}/${domain}_access.log combined
 </VirtualHost>
 EOF
+
+    # Check if the rewrite module is enabled, if not, enable it
+    if ! a2query -m rewrite &>/dev/null; then
+        a2enmod rewrite
+    fi
+
+    # Enable SSL module if not already enabled
+    if ! a2query -m ssl &>/dev/null; then
+        a2enmod ssl
+    fi
 
     # Enable virtual host
     a2ensite "$domain.conf"
