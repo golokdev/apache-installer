@@ -33,10 +33,6 @@ create_user() {
     useradd -m -s /bin/bash -g "$username" "$username"
     
     mkdir -p  "/var/www/$username"
-    chmod -R 755 /var/www/$username
-    usermod -d /var/www/$username $username
-    chmod -R g+w /var/www/$username
-    chown -R $username:$username /var/www/$username
     
     # Ask for password and confirm password
     while true; do
@@ -90,7 +86,10 @@ create_website() {
 
     # Create site directory
     mkdir -p "/var/www/$username/$domain/public_html"
-
+    chmod -R 755 /var/www/$username
+    usermod -d /var/www/$username $username
+    chmod -R g+w /var/www/$username
+    chown -R $username:$username /var/www/$username
     
     cat << EOF > "/etc/apache2/sites-available/$domain.conf"
 <VirtualHost *:80>
