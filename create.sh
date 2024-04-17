@@ -33,7 +33,7 @@ create_user() {
     useradd -m -s /bin/bash -g "$username" "$username"
     
     mkdir -p  "/var/www/$username"
-    
+    usermod -d /var/www/$username $username
     # Ask for password and confirm password
     while true; do
         read -s -p "Enter password for user $username: " password
@@ -87,7 +87,6 @@ create_website() {
     # Create site directory
     mkdir -p "/var/www/$username/$domain/public_html"
     chmod -R 755 /var/www/$username
-    usermod -d /var/www/$username $username
     chmod -R g+w /var/www/$username
     chown -R $username:$username /var/www/$username
     
