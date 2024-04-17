@@ -26,8 +26,11 @@ check_user_exists() {
 create_user() {
     username="$1"
 
-    # Create a new user
-    useradd -m -s /bin/bash "$username"
+     # Create a new group with the same name as the username
+    groupadd "$username"
+
+    # Create a new user and set the group
+    useradd -m -s /bin/bash -g "$username" "$username"
     
     mkdir -p  "/var/www/$username"
     chmod -R 755 /var/www/$username
