@@ -29,8 +29,11 @@ create_user() {
     # Create a new user
     useradd -m -s /bin/bash "$username"
     
-    mkdir -p  "$username:$username" "/var/www/$username/$domain"
-    chown -R "$username:$username" "/var/www/$username/$domain"
+    mkdir -p  "/var/www/$username"
+    chmod -R 755 /var/www/$username
+    usermod -d /var/www/$username $username
+    chmod -R g+w /var/www/$username
+    chown -R :$username /var/www/$username
     
     # Ask for password and confirm password
     while true; do
@@ -84,7 +87,6 @@ create_website() {
 
     # Create site directory
     mkdir -p "/var/www/$username/$domain/public_html"
-    
 
     
     cat << EOF > "/etc/apache2/sites-available/$domain.conf"
@@ -166,8 +168,8 @@ Description=File browser: $domain
 After=network.target
 
 [Service]
-User=golokdev
-Group=golokdev
+User=$username
+Group=$username
 ExecStart=/usr/local/bin/filebrowser -c $fb_config_file
 
 [Install]
@@ -197,6 +199,9 @@ EOF
     
     # Stop Filebrowser using its process ID
     kill "$filebrowser_pid"
+
+    # Set permissions to the database file
+    chown $username:$username "$fb_database_file"
     
     # Reload daemon and start Filebrowser service
     systemctl daemon-reload
