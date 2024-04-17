@@ -50,7 +50,7 @@ create_user() {
 
 # Function to find the next available port starting from 8080
 find_next_available_port() {
-    port=8080
+    port=8081
     while ss -tln | grep -q ":$port"; do
         ((port++))
     done
@@ -186,6 +186,18 @@ EOF
 }
 EOF
 
+    # Initialize Filebrowser database in the background
+    filebrowser -d "$fb_database_file" &
+    
+    # Capture the process ID of the background process
+    filebrowser_pid=$!
+    
+    # Wait for a moment to ensure that Filebrowser has initialized the database
+    sleep 1
+    
+    # Stop Filebrowser using its process ID
+    kill "$filebrowser_pid"
+    
     # Reload daemon and start Filebrowser service
     systemctl daemon-reload
     systemctl enable "filebrowser-$domain"
