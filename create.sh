@@ -56,7 +56,7 @@ create_site() {
         php_admin_value error_log "/var/www/$username/$domain/public_html/error_log"
     </Directory>
 
-    CustomLog \${APACHE_LOG_DIR}/$domain_access.log combined
+    CustomLog ${APACHE_LOG_DIR}/${domain}_access.log combined
     RewriteEngine on
     RewriteCond %{SERVER_NAME} =www.$domain [OR]
     RewriteCond %{SERVER_NAME} =$domain
@@ -79,7 +79,7 @@ create_site() {
     SSLCertificateFile $cert_dir/$domain.crt
     SSLCertificateKeyFile $cert_dir/$domain.key
 
-    CustomLog \${APACHE_LOG_DIR}/$domain_access.log combined
+    CustomLog ${APACHE_LOG_DIR}/${domain}_access.log combined
 </VirtualHost>
 EOF
 
