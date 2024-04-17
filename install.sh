@@ -13,14 +13,20 @@ apt update
 apt install apache2 -y
 
 # Add PHP PPA repository
-add-apt-repository ppa:ondrej/php -y
+add-apt-repository --yes ppa:ondrej/php
 apt update
 
 # Install PHP and required extensions
 apt install php8.2-{fpm,cli,bz2,curl,mbstring,intl,bcmath,xml,mysql,zip,gd,imagick} libapache2-mod-php8.2 -y
+a2enmod proxy_fcgi setenvif
+a2enconf php8.2-fpm 
+systemctl reload apache2
+echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
 
 # Install MySQL
 apt install mysql-server -y
+
+mysql_secure_installation
 
 # Install phpMyAdmin
 apt install phpmyadmin -y
