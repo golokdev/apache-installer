@@ -29,6 +29,9 @@ create_user() {
     # Create a new user
     useradd -m -s /bin/bash "$username"
     
+    mkdir -p  "$username:$username" "/var/www/$username/$domain"
+    chown -R "$username:$username" "/var/www/$username/$domain"
+    
     # Ask for password and confirm password
     while true; do
         read -s -p "Enter password for user $username: " password
@@ -59,9 +62,8 @@ create_certificate() {
     domain="$1"
 
     # Check if the SSL certificate directory exists, if not, create it
-    if [ ! -d "$cert_dir" ]; then
-        mkdir -p "$cert_dir"
-    fi
+    mkdir -p "$cert_dir"
+    
 
     # Check if the SSL certificate and key already exist
     if [ ! -f "$cert_dir/$domain.crt" ] || [ ! -f "$cert_dir/$domain.key" ]; then
@@ -79,6 +81,12 @@ create_website() {
     domain="$1"
     username="$2"
     fb_port="$3"
+
+    # Create site directory
+    mkdir -p "/var/www/$username/$domain/public_html"
+    
+
+    
     cat << EOF > "/etc/apache2/sites-available/$domain.conf"
 <VirtualHost *:80>
     ServerAdmin admin@$domain
@@ -211,8 +219,8 @@ fi
 # Create Filebrowser service for the subdomain files.domain
 create_filebrowser_service "$domain"
 
-# Create website in the virtual host
-create_website "$domain" "$username" "$fb_port"
-
 # Create wildcard SSL certificate
 create_certificate "$domain"
+
+# Create website in the virtual host
+create_website "$domain" "$username" "$fb_port"
