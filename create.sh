@@ -36,7 +36,7 @@ create_user() {
     chmod -R 755 /var/www/$username
     usermod -d /var/www/$username $username
     chmod -R g+w /var/www/$username
-    chown -R :$username /var/www/$username
+    chown -R $username:$username /var/www/$username
     
     # Ask for password and confirm password
     while true; do
