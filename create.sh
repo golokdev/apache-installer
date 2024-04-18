@@ -34,6 +34,7 @@ create_user() {
     
     mkdir -p  "/var/www/$username"
     usermod -d /var/www/$username $username
+    systemctl restart vsftpd
     # Ask for password and confirm password
     while true; do
         read -s -p "Enter password for user $username: " password
