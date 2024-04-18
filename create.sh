@@ -209,7 +209,17 @@ EOF
     systemctl daemon-reload
     systemctl enable "filebrowser-$domain"
     systemctl start "filebrowser-$domain"
+
+    #opening the port
+    ufw allow $fb_port/tcp
+    ufw reload
 }
+
+# Check if script is run as root
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root. Please use \"sudo su root\" then run this."
+    exit 1
+fi
 
 # Ask user for domain name and username
 read -p "Enter domain name: " domain
