@@ -12,26 +12,20 @@ check_website_enabled() {
     fi
 }
 
-# Function to get the root path of a website from its configuration file
-get_website_root_path() {
-    domain="$1"
-    if [ -f "/etc/apache2/sites-available/$domain.conf" ]; then
-        root_path=$(awk '/DocumentRoot/ {print $2}' "/etc/apache2/sites-available/$domain.conf" | tr -d '\r')
-        echo "$root_path"
-    else
-        echo "Website configuration file not found."
-    fi
-}
-
 # Function to create a Let's Encrypt SSL certificate
 create_letsencrypt_certificate() {
     domain="$1"
     email="$2"
-    root_path="$3"
 
     # Create certificate using certbot
-    certbot certonly --webroot -w "$root_path" -d "$domain" -d "*.$domain" --email "$email" --agree-tos
+    sudo certbot certonly --manual --preferred-challenges dns -d "$domain" -d "*.$domain" -m "$email"
 }
+
+# Check if script is run as root
+if [ "$(id -u)" != "0" ]; then
+    echo "This script must be run as root. Please use \"sudo su root\" then run this."
+    exit 1
+fi
 
 # Ask user for domain name and email
 read -p "Enter domain name: " domain
@@ -39,11 +33,13 @@ read -p "Enter your email address: " email
 
 # Check if the website exists and is enabled
 if check_website_enabled "$domain"; then
-    root_path=$(get_website_root_path "$domain")
-    echo "Root path of $domain: $root_path"
     # Create Let's Encrypt certificate
-    create_letsencrypt_certificate "$domain" "$email" "$root_path"
+    create_letsencrypt_certificate "$domain" "$email"
     if [ $? -eq 0 ]; then
+        # Copy the certificate files to your destination directory
+        cp "/etc/letsencrypt/live/$domain/fullchain.pem" "$cert_dir/$domain.crt"
+        cp "/etc/letsencrypt/live/$domain/privkey.pem" "$cert_dir/$domain.key"
+        systemctl reload apache2
         echo "Let's Encrypt certificate for $domain and *.$domain created successfully."
     else
         echo "Failed to create Let's Encrypt certificate for $domain and *.$domain."
