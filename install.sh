@@ -58,10 +58,10 @@ public_ip=$(curl -s https://api.ipify.org)
 
 # Copy the modified configuration files to their respective locations
 echo "Copying modified configuration files..."
-cat apache.txt > /etc/apache2/apache2.conf
-cat php.txt > /etc/php/8.2/fpm/php.ini
-cat pma.txt > /etc/phpmyadmin/config.inc.php
-cat ftp.txt > /etc/vsftpd.conf
+cat src/apache.txt > /etc/apache2/apache2.conf
+cat src/php.txt > /etc/php/8.2/fpm/php.ini
+cat src/pma.txt > /etc/phpmyadmin/config.inc.php
+cat src/ftp.txt > /etc/vsftpd.conf
 sed -i "s/your_public_ip/$public_ip/g" /etc/vsftpd.conf
 
 #Here reload or restart necessary services for applying new config
