@@ -119,55 +119,15 @@ create_website() {
     chmod -R 755 /var/www/$username
     chmod -R g+w /var/www/$username
     chown -R $username:$username /var/www/$username
-    
-    cat << EOF > "/etc/apache2/sites-available/$domain.conf"
-<VirtualHost *:80>
-    ServerAdmin admin@$domain
-    ServerName $domain
-    ServerAlias www.$domain
-    DocumentRoot /var/www/$username/$domain/public_html
 
-    <Directory /var/www/$username/$domain/public_html>
-        AllowOverride None
-        Require all granted
-        php_admin_value error_log "/var/www/$username/$domain/public_html/error_log"
-    </Directory>
+    cp src/site.txt /etc/apache2/sites-available/$domain.conf
+    sed -i \
+        -e "s/{{domain}}/$domain/g" \
+        -e "s/{{username}}/$username/g" \
+        -e "s|{{cert_dir}}|$cert_dir|g" \
+        -e "s/{{fb_port}}/$fb_port/g" \
+        /etc/apache2/sites-available/$domain.conf
 
-    CustomLog ${APACHE_LOG_DIR}/${domain}_access.log combined
-    RewriteEngine on
-    RewriteCond %{SERVER_NAME} =www.$domain [OR]
-    RewriteCond %{SERVER_NAME} =$domain
-    RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
-</VirtualHost>
-
-<VirtualHost *:443>
-    ServerAdmin admin@$domain
-    ServerName $domain
-    ServerAlias www.$domain
-    DocumentRoot /var/www/$username/$domain/public_html
-
-    <Directory /var/www/$username/$domain/public_html>
-        AllowOverride None
-        Require all granted
-        php_admin_value error_log "/var/www/$username/$domain/public_html/error_log"
-    </Directory>
-
-    SSLEngine On
-    SSLCertificateFile $cert_dir/$domain.crt
-    SSLCertificateKeyFile $cert_dir/$domain.key
-
-    CustomLog ${APACHE_LOG_DIR}/${domain}_access.log combined
-</VirtualHost>
-
-<VirtualHost *:443>
-    ServerAdmin admin@files.$domain
-    ServerName files.$domain
-    ServerAlias www.files.$domain
-    ProxyPreserveHost On
-    ProxyPass / http://localhost:$fb_port/
-    ProxyPassReverse / http://localhost:$fb_port/
-</VirtualHost>
-EOF
 
     a2enmod proxy
     a2enmod proxy_http
@@ -184,7 +144,7 @@ create_filebrowser_service() {
     fb_service_file="/etc/systemd/system/filebrowser-$domain.service"
     fb_database_file="/etc/filebrowser/database/$domain.db"
     fb_config_file="/etc/filebrowser/config/$domain.json"
-
+    fb_home_dir="/var/www/$username/$domain/public_html"
     # Create directories if not exist
     mkdir -p "/etc/filebrowser/database"
     mkdir -p "/etc/filebrowser/config"
@@ -193,32 +153,18 @@ create_filebrowser_service() {
     fb_port=$(find_next_available_port)
 
     # Create Filebrowser service file
-    cat << EOF > "$fb_service_file"
-[Unit]
-Description=File browser: $domain
-After=network.target
-
-[Service]
-User=$username
-Group=$username
-ExecStart=/usr/local/bin/filebrowser -c $fb_config_file
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
+    cp src/fb-service.txt "$fb_service_file"
+    sed -i -e "s/username/$username/g" -e "s/config_file/$fb_config_file/g" "$fb_service_file"
+    
     # Create Filebrowser configuration file
-    cat << EOF > "$fb_config_file"
-{
-  "port": $fb_port,
-  "baseURL": "",
-  "address": "",
-  "log": "stdout",
-  "database": "$fb_database_file",
-  "root": "/var/www/$username/$domain/public_html"
-}
-EOF
+    cp src/fb-json.txt "$fb_config_file"
+    sed -i \
+        -e "s/fb_port/$fb_port/g" \
+        -e "s/fb_database_file/$fb_database_file/g" \
+        -e "s/fb_home_dir/$fb_home_dir/g" \
+        "$fb_config_file"
 
+    
     # Initialize Filebrowser database in the background
     filebrowser -d "$fb_database_file" &
     
