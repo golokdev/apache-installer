@@ -10,7 +10,7 @@
         php_admin_value error_log "/var/www/{{username}}/{{domain}}/public_html/error_log"
     </Directory>
 
-    CustomLog \${APACHE_LOG_DIR}/{{domain}}_access.log combined
+    CustomLog /{{domain}}_access.log combined
     RewriteEngine on
     RewriteCond %{SERVER_NAME} =www.{{domain}} [OR]
     RewriteCond %{SERVER_NAME} ={{domain}}
@@ -26,19 +26,16 @@
     <Directory /var/www/{{username}}/{{domain}}/public_html>
         AllowOverride None
         Require all granted
-        php_admin_value error_log "/var/www/{{username}}/{{domain}}/public_html/error_log"
+        ProxyFCGISetEnvIf "true" PHP_ADMIN_VALUE "error_log=/var/www/{{username}}/{{domain}}/public_html/error_log"
     </Directory>
 
     SSLEngine On
     SSLCertificateFile {{cert_dir}}/{{domain}}.crt
     SSLCertificateKeyFile {{cert_dir}}/{{domain}}.key
 
-    CustomLog \${APACHE_LOG_DIR}/{{domain}}_access.log combined
 
-    # Specify a separate PHP-FPM pool for this site
-    <FilesMatch \.php$>
-        SetHandler "proxy:unix:/var/run/php/{{domain}}-fpm.sock|fcgi://localhost"
-    </FilesMatch>
+
+     CustomLog \${APACHE_LOG_DIR}/{{domain}}_access.log combined
 </VirtualHost>
 
 <VirtualHost *:443>
