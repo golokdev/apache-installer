@@ -119,7 +119,21 @@ fi
 owner=$(get_site_owner "$config_file")
 echo "Site owner is \"$owner\"."
 # Confirm if the user wants to remove the user account
-if confirm "Do you want to remove the user account \"$owner\" associated with this site?"; then
+read -p "Do you want to remove the user account \"$owner\" associated with this site? [Y/n]: " choice
+case "$choice" in
+    [Yy]*)
+        if check_other_sites "$owner"; then
+            echo "This user \"$owner\" has other sites. Can not be deleted"
+        else
+            delete_user "$owner"
+        fi
+        ;;
+    *)
+        ;;
+esac
+
+
+
     if check_other_sites "$owner"; then
         echo "This user \"$owner\" has other sites. Can not be deleted"
     else
@@ -128,6 +142,7 @@ if confirm "Do you want to remove the user account \"$owner\" associated with th
 fi
 
 # Removing home directory
+site_path=$(awk '/DocumentRoot/ { print $2; exit }' "$config_file" | sed 's/"//g')
 echo "Removing site directory: $site_path"
 rm -r "$site_path"
 
