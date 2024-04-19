@@ -110,7 +110,7 @@ read -p "Enter domain name: " domain
 
 config_file="/etc/apache2/sites-available/$domain.conf"
 # Check if the website exists
-if ! check_website_exists "$config_file"; then
+if ! check_website_exists "$domain"; then
     echo "Site \"$domain\" does not exist."
     exit 1
 fi
