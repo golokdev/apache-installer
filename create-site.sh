@@ -87,6 +87,7 @@ create_website() {
 
     # Create site directory
     mkdir -p "/var/www/$username/$domain/public_html"
+    echo "<?php echo 'Your website $domain working :)'; ?>" > "/var/www/$username/$domain/public_html/index.php"
     chmod -R 755 /var/www/$username
     chmod -R g+w /var/www/$username
     chown -R $username:$username /var/www/$username
