@@ -9,6 +9,10 @@ This repository contains a collection of scripts for managing websites, includin
 - `get-ssl.sh`: Script to obtain SSL certificates for existing websites using Let's Encrypt.
 - `install.sh`: Script to install dependencies and set up the environment for website management.
 
+## Requirements
+- These scripts are designed to be run on Ubuntu 22.04 or similar Debian-based distributions.
+- Root access is required to execute some of the operations, so ensure that you have appropriate permissions.
+
 ## Usage
 1. Switch to root user
 ```
@@ -43,15 +47,11 @@ chmod +x *.sh
 ./delete-site.sh
 ```
 
-## Requirements
-- These scripts are designed to be run on Ubuntu 22.04 or similar Debian-based distributions.
-- Root access is required to execute some of the operations, so ensure that you have appropriate permissions.
-
 ## Author
 
-[Golok Mallick]
+[Golok Mallick](https://github.com/golokdev)
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+Distributed under the MIT license. See LICENSE for details.
 
