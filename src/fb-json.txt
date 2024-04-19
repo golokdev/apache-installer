@@ -1,0 +1,8 @@
+{
+  "port": fb_port,
+  "baseURL": "",
+  "address": "",
+  "log": "stdout",
+  "database": "fb_database_file",
+  "root": "fb_home_dir"
+}
