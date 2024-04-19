@@ -29,8 +29,20 @@ This repository contains a collection of scripts for managing websites, includin
 
 ## Author
 
-[Golok Mallick]
+[Your Name]
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
+
+<script>
+function copyToClipboard(script) {
+  var textarea = document.createElement("textarea");
+  textarea.textContent = script;
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  document.body.removeChild(textarea);
+  alert("Script copied to clipboard!");
+}
+</script>
