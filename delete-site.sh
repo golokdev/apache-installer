@@ -1,5 +1,25 @@
 #!/bin/bash
 
+# Function to check if a package is installed
+check_package() {
+    package="$1"
+    if ! dpkg -l | grep -q "^ii\s*$package"; then
+        echo "Package $package is not installed."
+        return 1
+    else
+        echo "Package $package is installed."
+        return 0
+    fi
+}
+
+# Function to check if all required packages are installed
+check_all_packages() {
+    required_packages=("apache2" "php8.2-fpm" "mysql-server" "phpmyadmin" "vsftpd" "certbot" "filebrowser" "ufw")
+    for package in "${required_packages[@]}"; do
+        check_package "$package" || return 1
+    done
+    return 0
+}
 
 # Function to check if a website exists
 check_website_exists() {
@@ -69,6 +89,13 @@ if [ "$(id -u)" != "0" ]; then
     echo "This script must be run as root. Please use \"sudo su root\" then run this."
     exit 1
 fi
+
+# Check if all required packages are installed
+if ! check_all_packages; then
+    echo "Some required packages are not installed. Please run install.sh script to install them."
+    exit 1
+fi
+
 
 # Ask user for domain name and username
 read -p "Enter domain name: " domain
