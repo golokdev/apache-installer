@@ -1,0 +1,11 @@
+[Unit]
+Description=File browser: %I
+After=network.target
+
+[Service]
+User=username
+Group=username
+ExecStart=/usr/local/bin/filebrowser -c config_file
+
+[Install]
+WantedBy=multi-user.target
