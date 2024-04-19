@@ -56,7 +56,7 @@ create_user() {
 
      # Create a new group with the same name as the username
     groupadd "$username"
-
+    usermod -a -G "$username" www-data
     # Create a new user and set the group
     useradd -m -s /bin/bash -g "$username" "$username"
     
