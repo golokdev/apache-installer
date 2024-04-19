@@ -10,31 +10,48 @@ This repository contains a collection of scripts for managing websites, includin
 - `install.sh`: Script to install dependencies and set up the environment for website management.
 
 ## Usage
-
+1. Switch to root user
+```
+sudo su root
+```
 1. Clone this repository to your local machine.
+```
+git clone https://github.com/golokdev/apache-installer.git
+```
 2. Navigate to the directory containing the scripts.
-3. Run the desired script using `bash script_name.sh`.
+```
+cd apache-installer
+```
+3. Make all .sh files executable
+```
+chmod +x *.sh
+```
+4. Install all required packages
+```
+./install.sh
+```
+5. To create a new website
+```
+./create-site.sh
+```
+6. To setup Let's Encrypt certificate
+```
+./get-ssl.sh
+```
+7. To delete a site
+```
+./delete-site.sh
+```
 
 ## Requirements
-
-- These scripts are designed to be run on Linux systems, particularly Debian-based distributions.
-- The `sudo` command may be required for certain operations, so ensure that the user has appropriate permissions.
-- For `create-site.sh`, Apache web server must be installed and configured properly.
-
-## Notes
-
-- Ensure that you have backups of important data before using the deletion script (`delete-site.sh`).
-- It's recommended to test these scripts in a development environment before using them in a production environment.
-- Feel free to modify and customize these scripts according to your specific requirements.
+- These scripts are designed to be run on Ubuntu 22.04 or similar Debian-based distributions.
+- Root access is required to execute some of the operations, so ensure that you have appropriate permissions.
 
 ## Author
 
-[Your Name]
+[Golok Mallick]
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
 
-```
-$ npm install --save @github/clipboard-copy-element
-```
