@@ -117,7 +117,7 @@ fi
 
 # Get the owner of the site
 owner=$(get_site_owner "$domain")
-
+echo "Site owner is \"$owner\"."
 # Confirm if the user wants to remove the user account
 if confirm "Do you want to remove the user account \"$owner\" associated with this site?"; then
     if check_other_sites "$owner"; then
