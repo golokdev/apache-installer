@@ -23,9 +23,7 @@ apt update
 
 # Install PHP and required extensions
 echo "Installing PHP and required extensions..."
-apt install php8.2-{fpm,cli,bz2,curl,mbstring,intl,bcmath,xml,mysql,zip,gd,imagick} libapache2-mod-php8.2 -y
-a2enmod proxy_fcgi setenvif
-a2enconf php8.2-fpm 
+apt install  php8.2-mysql php8.2-xml php8.2-xmlrpc php8.2-curl php8.2-gd php8.2-imagick php8.2-cli php8.2-imap php8.2-mbstring php8.2-opcache php8.2-soap php8.2-zip php8.2-intl -y
 systemctl reload apache2
 echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
 
