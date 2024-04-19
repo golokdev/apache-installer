@@ -49,7 +49,7 @@ chmod +x *.sh
 
 ## Author
 
-[Golok Mallick](https://github.com/golokdev)
+[golokdev](https://github.com/golokdev)
 
 ## License
 
