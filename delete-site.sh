@@ -57,7 +57,7 @@ check_other_sites() {
     # Iterate over each configuration file
     for config_file in $site_configs; do
         # Get the owner of the site from the configuration file
-        site_owner=$(get_site_owner "$domain")
+        site_owner=$(get_site_owner "$config_file")
         
         # If the owner matches the provided owner, return true
         if [ "$site_owner" = "$owner" ]; then
