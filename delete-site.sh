@@ -80,6 +80,7 @@ delete_user() {
     # Get the home directory of the user
     home_directory=$(getent passwd "$username" | cut -d: -f6)
     # Delete the user
+    pkill -u "$username"
     userdel -r "$username"
     # Delete the group
     groupdel -f "$username"
