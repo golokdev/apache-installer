@@ -3,12 +3,12 @@
 # Function to check if a package is installed
 check_package() {
     package="$1"
-    if dpkg -l | grep -q "^ii\s*$package"; then
-        echo "Package $package is installed."
+    if dpkg -l | grep -q "^ii\s*$package"; then\
+    
     else
         if [ "$package" == "filebrowser" ]; then
             if command -v filebrowser &>/dev/null; then
-                echo "FileBrowser is installed."
+            
             else
                 echo "FileBrowser is not installed."
                 return 1
@@ -55,9 +55,9 @@ check_other_sites() {
     site_configs=$(ls /etc/apache2/sites-available/)
 
     # Iterate over each configuration file
-    for config_file in $site_configs; do
+    for config in $site_configs; do
         # Get the owner of the site from the configuration file
-        site_owner=$(get_site_owner "$config_file")
+        site_owner=$(get_site_owner "/etc/apache2/sites-available/$config")
         
         # If the owner matches the provided owner, return true
         if [ "$site_owner" = "$owner" ]; then
@@ -77,7 +77,7 @@ delete_user() {
     # Delete the user
     userdel -r "$username"
     # Delete the group
-    groupdel "$username"
+    groupdel -f "$username"
     # Delete home directory
     rm -r "$home_directory"
     echo "User $username deleted."
