@@ -31,7 +31,7 @@ echo "<?php phpinfo(); ?>" | sudo tee /var/www/html/info.php
 
 # Install MySQL
 echo "Installing MySQL..."
-apt install mysql-server -y
+apt install mariadb-server -y
 
 echo "Securing MySQL installation..."
 mysql_secure_installation
