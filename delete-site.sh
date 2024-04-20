@@ -4,11 +4,11 @@
 check_package() {
     package="$1"
     if dpkg -l | grep -q "^ii\s*$package"; then
-    
+        return 0
     else
         if [ "$package" == "filebrowser" ]; then
             if command -v filebrowser &>/dev/null; then
-            
+                return 0
             else
                 echo "FileBrowser is not installed."
                 return 1
@@ -56,6 +56,11 @@ check_other_sites() {
 
     # Iterate over each configuration file
     for config in $site_configs; do
+        # Skip the provided site's configuration file
+        if [ "$config" = "$site_config" ]; then
+            continue
+        fi
+        
         # Get the owner of the site from the configuration file
         site_owner=$(get_site_owner "/etc/apache2/sites-available/$config")
         
