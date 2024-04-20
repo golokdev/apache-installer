@@ -134,13 +134,6 @@ esac
 
 
 
-    if check_other_sites "$owner"; then
-        echo "This user \"$owner\" has other sites. Can not be deleted"
-    else
-        delete_user "$owner"
-    fi
-fi
-
 # Removing home directory
 site_path=$(awk '/DocumentRoot/ { print $2; exit }' "$config_file" | sed 's/"//g')
 echo "Removing site directory: $site_path"
