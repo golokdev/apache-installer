@@ -6,11 +6,11 @@ cert_dir="/etc/ssl/certs/apache2"
 check_package() {
     package="$1"
     if dpkg -l | grep -q "^ii\s*$package"; then
-        echo "Package $package is installed."
+        return 0
     else
         if [ "$package" == "filebrowser" ]; then
             if command -v filebrowser &>/dev/null; then
-                echo "FileBrowser is installed."
+                return 0
             else
                 echo "FileBrowser is not installed."
                 return 1
