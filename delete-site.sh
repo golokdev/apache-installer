@@ -57,7 +57,7 @@ check_other_sites() {
     # Iterate over each configuration file
     for config in $site_configs; do
         # Skip the provided site's configuration file
-        if [ "$config" = "$site_config" ]; then
+        if [ "/etc/apache2/sites-available/$config" = "$config_file" ]; then
             continue
         fi
         
