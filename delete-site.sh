@@ -3,7 +3,7 @@
 # Function to check if a package is installed
 check_package() {
     package="$1"
-    if dpkg -l | grep -q "^ii\s*$package"; then\
+    if dpkg -l | grep -q "^ii\s*$package"; then
     
     else
         if [ "$package" == "filebrowser" ]; then
