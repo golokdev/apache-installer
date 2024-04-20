@@ -154,7 +154,7 @@ create_filebrowser_service() {
 
     # Create Filebrowser service file
     cp src/fb-service.txt "$fb_service_file"
-    sed -i -e "s/username/golokand/g" -e "s|config_file|$fb_config_file|g" "$fb_service_file"
+    sed -i -e "s/username/$username/g" -e "s|config_file|$fb_config_file|g" "$fb_service_file"
     
     # Create Filebrowser configuration file
     cp src/fb-json.txt "$fb_config_file"
