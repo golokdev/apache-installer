@@ -45,4 +45,9 @@
     ProxyPreserveHost On
     ProxyPass / http://localhost:{{fb_port}}/
     ProxyPassReverse / http://localhost:{{fb_port}}/
+
+    SSLEngine On
+    SSLCertificateFile {{cert_dir}}/{{domain}}.crt
+    SSLCertificateKeyFile {{cert_dir}}/{{domain}}.key
+
 </VirtualHost>
